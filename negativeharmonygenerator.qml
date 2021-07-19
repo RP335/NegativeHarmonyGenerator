@@ -240,14 +240,14 @@ MuseScore
         if (fullScore)
         {
             cmd("select-all")
-            curScore.startCmd()
         }
+        curScore.startCmd()
         for (var i in curScore.selection.elements)
             if (curScore.selection.elements[i].pitch)
                 func(curScore.selection.elements[i]);
+        curScore.endCmd();
         if (fullScore)
         {
-            curScore.endCmd();
             cmd("escape");
         }
         Qt.quit();
