@@ -4,6 +4,7 @@ import QtQuick.Controls 1.1
 import QtQuick.Controls.Styles 1.3
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
+import QtQuick.Window 2.2
 
 import MuseScore 3.0
 
@@ -17,6 +18,7 @@ MuseScore
     pluginType: "dialog"
     width: 400
     height: 400
+	id: 'pluginId'
     property var fifths : ["C", "G", "D", "A","E","B", "F#", "C#", "G#", "D#", "A#", "F"];
     property var split1 : [];
     property var split2 : [];
@@ -250,8 +252,6 @@ MuseScore
             curScore.endCmd();
             cmd("escape");
         }
-        Qt.quit();
-
     }
 
     Rectangle
@@ -373,6 +373,7 @@ MuseScore
                             text: qsTranslate("PrefsDialogBase", "Apply")
                             onClicked: {
                                 applyToNotesInSelection(generatenegativeharmony)
+								pluginId.parent.Window.window.close();
                             }
 
                         }
@@ -380,7 +381,7 @@ MuseScore
                         id: quitbutton
                             text: qsTranslate("PrefsDialogBase", "Quit")
                             onClicked: {
-                                Qt.quit()
+                                pluginId.parent.Window.window.close();
                             }
 
                         }
