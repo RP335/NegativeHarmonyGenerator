@@ -26,20 +26,20 @@ MuseScore
     property var mainarraynotes : [];
     property var mainarraynumbers : [];
     property var selectedscale : "";
-    /*property var tpcc : [14,9,16,11,18,13,8,15,10,17,12,19];
-    property var tpccsharp : [9,16,11,18,13,8,15,10,17,12,19,14];
-    property var tpcd : [16,23,18,13,20,15,22,17,24,19,14,21];
-    property var tpcdsharp : [11,18,13,8,15,10,17,12,19,14,9,16];
-    property var tpce : [18,13,20,15,22,17,24,19,14,21,16,23];
-    property var tpcf : [13,8,15,10,17,12,19,14,9,16,11,18];
-    property var tpcfsharp : [8,15,10,17,12,7,14,9,16,11,18,13];
-    property var tpcg : [15,22,17,24,19,14,21,16,23,18,13,20];
-    property var tpcgsharp : [10,17,12,19,14,9,16,11,18,13,8,15];
-    property var tpca : [17,24,19,14,21,16,23,18,13,20,15,22];
-    property var tpcasharp : [12,19,14,9,16,11,18,13,8,15,10,17];
-    property var tpcb : [19,14,21,16,23,18,13,20,15,22,17,24];
+    property var tpcc : [14,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpccsharp : [14,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpcd : [14,21,16,23,18,13,20,15,22,17,24,19];
+    property var tpcdsharp : [14,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpce : [14,21,16,23,18,13,20,15,22,17,24,19];
+    property var tpcf : [14,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpcfsharp : [7,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpcg : [14,21,16,23,18,13,20,15,22,17,24,19];
+    property var tpcgsharp : [14,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpca : [14,21,16,23,18,13,20,15,22,17,24,19];
+    property var tpcasharp : [14,9,16,11,18,13,8,15,10,17,12,19];
+    property var tpcb : [14,21,16,23,18,13,20,15,22,17,24,19];
     property var tpcarray1: [];
-    property var tpcarrayfull : [];*/
+    property var tpcarrayfull : [];
 
     function makethelargearrays()
     {
@@ -68,7 +68,7 @@ MuseScore
         console.log("2");
         makethelargearrays();
         selectedscale = scale;
-        /*if (scale == "C")
+        if (scale == "C")
         {
             for (var p = 0 ; p <12 ; p++)
                 tpcarray1[p] = tpcc[p];
@@ -141,7 +141,11 @@ MuseScore
             }
 
             k++;
-        }*/
+        }
+        for( var i = 0; i < 128; i++)
+        {
+            console.log("tpcfull = "+tpcarrayfull[i]);
+        }
 
         for (var j = fifths.indexOf(scale)+1, k = 0;k<6;j ++, k++)
         {
@@ -208,7 +212,9 @@ MuseScore
                 console.log(i);
                 newpitch = i;
                 note.pitch = newpitch;
-                //note.tpc = tpcarrayfull[i];
+                //note.tpc2 = tpcarrayfull[i];
+                note.tpc1 = tpcarrayfull[i];
+                note.tpc2 = tpcarrayfull[i];
                 break;
             }
             if (mainarraynotes[j] == newnote)
@@ -216,7 +222,8 @@ MuseScore
                 console.log(j);
                 newpitch = j;
                 note.pitch = newpitch;
-                //note.tpc = tpcarrayfull[j];
+                note.tpc2 = tpcarrayfull[j];
+                note.tpc1 = tpcarrayfull[j];
                 break;
             }
             console.log("newp "+newpitch);
@@ -244,6 +251,7 @@ MuseScore
             cmd("escape");
         }
         Qt.quit();
+
     }
 
     Rectangle
