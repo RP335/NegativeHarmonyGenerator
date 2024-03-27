@@ -6,7 +6,7 @@ import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
 import QtQuick.Window 2.2
 
-import MuseScore 3.0
+import MuseScore 4.0
 
 MuseScore
 
@@ -42,6 +42,105 @@ MuseScore
     property var tpcb : [14,21,16,23,18,13,20,15,22,17,24,19];
     property var tpcarray1: [];
     property var tpcarrayfull : [];
+
+    function elementObject(track, pitches, tpcs, dur, tupdur, ratio,harmony) {
+        this.track = track;
+        this.pitches = pitches;
+        this.tpcs = tpcs;
+        this.dur = dur;
+        this.tupdur = tupdur;
+        this.ratio = ratio;
+        this.harmony = harmony;
+    }
+
+    function activeTracks() {
+        var tracks = [];
+        for(var i = 0; i < curScore.selection.elements.length; i++) {
+            var e = curScore.selection.elements[i];
+            if(i == 0) {
+                tracks.push(e.track);
+                var previousTrack = e.track;
+            }
+            if(i > 0) {
+                if(e.track != previousTrack) {
+                    tracks.push(e.track);
+                    previousTrack = e.track;
+                }
+            }
+        }
+        return tracks;
+    }
+
+    function doNegHarm() {
+        // initialize tick variables
+        var startTick;
+        var endTick;
+
+        // initialize loop object variables
+        var pitches = [];
+        var tpcs = [];
+        var dur = [];
+        var tupdur = [];
+        var ratio = [];
+        //var harmony = [];
+        var harmony;
+        var thisElement = []; // the container for chord/note/rest data
+        var theRetrograde = []; // the container for the full selection
+
+        // initialize cursor
+        var cursor = curScore.newCursor();
+
+        // check if a selection exists
+        cursor.rewind(1); // rewind cursor to beginning of selection to avoid last measure bug
+        if(!cursor.segment) {
+            console.log("Nothing Selected");
+            Qt.quit; // if nothing selected, quit
+        }
+
+        // get selection start and end ticks
+        startTick = cursor.tick; // get tick at beginning of selection
+        cursor.rewind(2); // go to end of selection
+        endTick = cursor.tick; // get tick at end of selection
+        if(endTick === 0) { // if last measure selected,
+            endTick = curScore.lastSegment.tick; // get last tick of score instead
+        }
+
+        // get active tracks
+        var tracks = activeTracks();
+
+        cursor.rewind(1); // go to beginning of selection before starting the loop
+
+        // go through the selection and copy all elements to an object
+        for(var trackNum in tracks) {
+             if(cursor.tick == 0 && trackNum < tracks.length) {
+                    cursor.rewind(1); // rewind to get additional voices
+                }
+            cursor.track = tracks[trackNum]; // set staff index
+            console.log ("cursor.track = ", cursor.track)
+            // begin loop
+            while(cursor.segment && cursor.tick < endTick) {
+                var e = cursor.element; // current chord, note, or rest at cursor
+                
+                // get pitch and tpc data
+                if(e.type == Element.CHORD) {
+                    var notes = e.notes; // get all notes in the chord
+                    var newpitch = 128;
+                    for(var noteLoop = 0; noteLoop < notes.length; noteLoop++) {
+                        var note = notes[noteLoop];
+                        curScore.startCmd();
+                        newpitch = generatenegativeharmony(note, newpitch)
+                        curScore.endCmd();
+                    }
+                }
+                cursor.next(); // advance the cursor (unless you want to get stuck in a while loop)
+            }
+            if(cursor.tick == endTick && trackNum < tracks.length) {
+                cursor.rewind(1); // rewind to get additional voices
+            }
+        }
+        
+    }
+
 
     function makethelargearrays()
     {
@@ -168,12 +267,12 @@ MuseScore
         split2 = split2.reverse();
         for (var i = 0 ; i <6; i++)
         {
-            console.log(split1[i]+" " + split2[i]+" ");
+            //console.log(split1[i]+" " + split2[i]+" ");
         }
 
     }
 
-    function generatenegativeharmony(note)
+    function generatenegativeharmony(note, oldpitch)
     {
         var curnote = "", newnote = "";
         var noteindex;
@@ -195,11 +294,15 @@ MuseScore
                     }
 
                 }
-                console.log(isinsplit1);
-                if (isinsplit1 == true)
+                //console.log("isinsplit1");
+                if (isinsplit1 == true){
+                    console.log("isinsplit1");
                     newnote = split2[split1.indexOf(curnote)];
-                else
+                }
+                else {
+                    console.log("isinsplit2");
                     newnote = split1[split2.indexOf(curnote)];
+                }
 
             }
 
@@ -228,31 +331,18 @@ MuseScore
                 note.tpc1 = tpcarrayfull[j];
                 break;
             }
-            console.log("newp "+newpitch);
+            //console.log("newp "+newpitch);
 
         }
         console.log("new = "+newpitch);
+        console.log("old = "+oldpitch);
+        while (newpitch > oldpitch) newpitch -= 12;
+        
         note.pitch = newpitch;
-
+        return newpitch;
 
     }
-    function applyToNotesInSelection(func)
-    {
-        var fullScore = !curScore.selection.elements.length
-        if (fullScore)
-        {
-            cmd("select-all")
-        }
-        curScore.startCmd()
-        for (var i in curScore.selection.elements)
-            if (curScore.selection.elements[i].pitch)
-                func(curScore.selection.elements[i]);
-        curScore.endCmd();
-        if (fullScore)
-        {
-            cmd("escape");
-        }
-    }
+    
 
     Rectangle
     {
@@ -372,7 +462,18 @@ MuseScore
                             id: applyButton
                             text: qsTranslate("PrefsDialogBase", "Apply")
                             onClicked: {
-                                applyToNotesInSelection(generatenegativeharmony)
+                                var fullScore = !curScore.selection.elements.length
+                                if (fullScore)
+                                {
+                                    cmd("select-all")
+                                }
+                                if (selectedscale === "")
+                                    assignscaleclick("C");
+                                doNegHarm();
+                                if (fullScore)
+                                {
+                                    cmd("escape");
+                                }
 								pluginId.parent.Window.window.close();
                             }
 
